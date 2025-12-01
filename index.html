@@ -17,7 +17,6 @@
         body {
             min-height: 100vh;
             overflow-x: hidden;
-            cursor: none;
         }
 
         header {
@@ -86,30 +85,6 @@
             object-fit: cover;
         }
 
-        .crosshair {
-            position: absolute;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .crosshair-h {
-            position: absolute;
-            width: 100vw;
-            height: 1px;
-            border-top: 2px dashed white;
-            top: 50%;
-            left: 0;
-        }
-
-        .crosshair-v {
-            position: absolute;
-            width: 1px;
-            height: 100vh;
-            border-left: 2px dashed white;
-            left: 50%;
-            top: 0;
-        }
-
         .hero-text {
             position: absolute;
             top: 50%;
@@ -171,27 +146,10 @@
 
     <section class="hero">
         <img src="/Images/Image1.png" alt="Built Environment" class="hero-image">
-        <div class="crosshair" id="crosshair">
-            <div class="crosshair-h"></div>
-            <div class="crosshair-v"></div>
-        </div>
         <div class="hero-text">
             <h1>Using data and tech to reduce risks and costs for projects in the built environment</h1>
         </div>
     </section>
 
-    <script>
-        document.addEventListener('mousemove', function(e) {
-            const crosshair = document.getElementById('crosshair');
-            const crosshairH = crosshair.querySelector('.crosshair-h');
-            const crosshairV = crosshair.querySelector('.crosshair-v');
-            
-            // Update horizontal line position
-            crosshairH.style.top = e.clientY + 'px';
-            
-            // Update vertical line position
-            crosshairV.style.left = e.clientX + 'px';
-        });
-    </script>
 </body>
 </html>
