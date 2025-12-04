@@ -85,22 +85,56 @@
             object-fit: cover;
         }
 
-        .hero-text {
+        .hero-content {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
-            max-width: 80%;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            width: 90%;
+            max-width: 1400px;
             z-index: 2;
+        }
+
+        .hero-text {
+            flex: 1;
+            max-width: 600px;
+            text-align: left;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
         }
 
         .hero-text h1 {
             font-size: 3rem;
             font-weight: 700;
             line-height: 1.2;
+        }
+
+        .animation-container {
+            flex: 1;
+            max-width: 500px;
+            min-width: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #mountainSvg {
+            width: 100%;
+            height: auto;
+        }
+
+        .dot {
+            fill: #ffffff;
+        }
+
+        .connecting {
+            stroke: #ffffff;
+            stroke-width: 1.5;
+            fill: none;
         }
 
         /* Fade-in animation */
@@ -122,6 +156,22 @@
         .hero-text {
             opacity: 0;
             animation: fadeIn 1s ease 0.3s forwards;
+        }
+
+        @media (max-width: 1200px) {
+            .hero-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .hero-text {
+                text-align: center;
+                max-width: 100%;
+            }
+            
+            .animation-container {
+                max-width: 400px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -147,6 +197,11 @@
             .hero-text h1 {
                 font-size: 2rem;
             }
+            
+            .animation-container {
+                max-width: 300px;
+                min-width: 250px;
+            }
         }
     </style>
 </head>
@@ -167,10 +222,231 @@
 
     <section class="hero">
         <img src="/Images/Image1.png" alt="Built Environment" class="hero-image">
-        <div class="hero-text">
-            <h1>Using data and tech to reduce risks and costs for projects in the built environment</h1>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Using data and tech to reduce risks and costs for projects in the built environment</h1>
+            </div>
+            <div class="animation-container">
+                <svg id="mountainSvg" viewBox="0 0 1000 700" role="img" aria-labelledby="mountainTitle">
+                    <title id="mountainTitle">Animated mountain visualization with dots forming a mountain shape</title>
+                    <polyline id="connector" class="connecting"></polyline>
+                    <g id="dotsLayer"></g>
+                </svg>
+            </div>
         </div>
     </section>
+
+    <script>
+        // Animation Configuration
+        const SVG_WIDTH = 1000;
+        const SVG_HEIGHT = 700;
+        const NUM_DOTS = 120;
+        const DOT_RADIUS = 3;
+        
+        // Mountain Shape Parameters
+        const PEAK_X = SVG_WIDTH * 0.48; // 480px
+        const BASE_Y = SVG_HEIGHT * 0.78; // 546px
+        const AMPLITUDE = SVG_HEIGHT * 0.55; // 385px
+        const SIGMA = SVG_WIDTH * 0.18; // 180px
+        const SHOULDER_OFFSET = 0.8; // Shoulder position relative to sigma
+        const SHOULDER_WIDTH = 0.6; // Shoulder width relative to sigma
+        const SHOULDER_HEIGHT = 0.3; // Shoulder amplitude relative to main amplitude
+        
+        // Animation Timing
+        const WANDER_DURATION = 3000; // ms
+        const FORM_DURATION = 1800; // ms
+        
+        // Animation Parameters
+        const TARGET_POSITION_JITTER = 20; // Random offset for target positions
+        const RANDOM_FORCE_MAGNITUDE = 0.5; // Magnitude of random forces during wandering
+        const BREATHING_AMPLITUDE = 3; // Vertical oscillation amplitude in settled phase
+        const BREATHING_FREQUENCY = 0.001; // Frequency of breathing oscillation
+        
+        // Animation State
+        let dots = [];
+        let sortedDots = []; // Pre-sorted dots for connector line
+        let animationPhase = 'wandering'; // 'wandering', 'forming', 'settled'
+        let phaseStartTime = Date.now();
+        
+        // Initialize SVG elements
+        const svg = document.getElementById('mountainSvg');
+        const dotsLayer = document.getElementById('dotsLayer');
+        const connector = document.getElementById('connector');
+        
+        // Gaussian function for mountain shape
+        function gaussian(x, mean, sigma, amplitude) {
+            const dx = x - mean;
+            return amplitude * Math.exp(-(dx * dx) / (2 * sigma * sigma));
+        }
+        
+        // Calculate mountain Y position for given X
+        function getMountainY(x) {
+            // Main peak
+            const mainPeak = gaussian(x, PEAK_X, SIGMA, AMPLITUDE);
+            // Secondary smaller peak for shoulder detail
+            const shoulder = gaussian(x, PEAK_X + SIGMA * SHOULDER_OFFSET, SIGMA * SHOULDER_WIDTH, AMPLITUDE * SHOULDER_HEIGHT);
+            return BASE_Y - mainPeak - shoulder;
+        }
+        
+        // EaseOutCubic easing function
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+        
+        // Create dots with initial random positions and velocities
+        function initializeDots() {
+            for (let i = 0; i < NUM_DOTS; i++) {
+                const x = Math.random() * SVG_WIDTH;
+                const y = Math.random() * SVG_HEIGHT;
+                
+                // Calculate target position on mountain
+                const targetX = (i / (NUM_DOTS - 1)) * SVG_WIDTH + (Math.random() - 0.5) * TARGET_POSITION_JITTER;
+                const targetY = getMountainY(targetX);
+                
+                const dot = {
+                    // Current position
+                    x: x,
+                    y: y,
+                    // Velocity for wandering
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    // Target position for mountain shape
+                    targetX: targetX,
+                    targetY: targetY,
+                    // Starting position for forming transition
+                    startX: x,
+                    startY: y,
+                    // SVG circle element
+                    element: null
+                };
+                
+                // Create SVG circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('class', 'dot');
+                circle.setAttribute('r', DOT_RADIUS);
+                circle.setAttribute('cx', dot.x);
+                circle.setAttribute('cy', dot.y);
+                dot.element = circle;
+                dotsLayer.appendChild(circle);
+                
+                dots.push(dot);
+            }
+            
+            // Sort dots once by targetX for connector line
+            sortedDots = [...dots].sort((a, b) => a.targetX - b.targetX);
+        }
+        
+        // Update dot positions during wandering phase
+        function updateWandering(dot) {
+            // Apply friction
+            dot.vx *= 0.98;
+            dot.vy *= 0.98;
+            
+            // Add small random force
+            dot.vx += (Math.random() - 0.5) * RANDOM_FORCE_MAGNITUDE;
+            dot.vy += (Math.random() - 0.5) * RANDOM_FORCE_MAGNITUDE;
+            
+            // Limit velocity
+            const maxSpeed = 3;
+            const speed = Math.sqrt(dot.vx * dot.vx + dot.vy * dot.vy);
+            if (speed > maxSpeed) {
+                dot.vx = (dot.vx / speed) * maxSpeed;
+                dot.vy = (dot.vy / speed) * maxSpeed;
+            }
+            
+            // Update position
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            
+            // Bounce off boundaries
+            if (dot.x < DOT_RADIUS) {
+                dot.x = DOT_RADIUS;
+                dot.vx = Math.abs(dot.vx);
+            }
+            if (dot.x > SVG_WIDTH - DOT_RADIUS) {
+                dot.x = SVG_WIDTH - DOT_RADIUS;
+                dot.vx = -Math.abs(dot.vx);
+            }
+            if (dot.y < DOT_RADIUS) {
+                dot.y = DOT_RADIUS;
+                dot.vy = Math.abs(dot.vy);
+            }
+            if (dot.y > SVG_HEIGHT - DOT_RADIUS) {
+                dot.y = SVG_HEIGHT - DOT_RADIUS;
+                dot.vy = -Math.abs(dot.vy);
+            }
+        }
+        
+        // Update dot positions during forming phase
+        function updateForming(dot, progress) {
+            const easedProgress = easeOutCubic(progress);
+            dot.x = dot.startX + (dot.targetX - dot.startX) * easedProgress;
+            dot.y = dot.startY + (dot.targetY - dot.startY) * easedProgress;
+        }
+        
+        // Update dot positions during settled phase with breathing motion
+        function updateSettled(dot, time) {
+            const offset = Math.sin(time * BREATHING_FREQUENCY) * BREATHING_AMPLITUDE;
+            
+            dot.x = dot.targetX;
+            dot.y = dot.targetY + offset;
+        }
+        
+        // Update connector polyline
+        function updateConnector() {
+            // Use pre-sorted dots for efficient connection
+            const points = sortedDots.map(dot => `${dot.x},${dot.y}`).join(' ');
+            connector.setAttribute('points', points);
+        }
+        
+        // Main animation loop
+        function animate() {
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - phaseStartTime;
+            
+            // Handle phase transitions
+            if (animationPhase === 'wandering' && elapsedTime >= WANDER_DURATION) {
+                animationPhase = 'forming';
+                phaseStartTime = currentTime;
+                // Store starting positions for forming transition
+                dots.forEach(dot => {
+                    dot.startX = dot.x;
+                    dot.startY = dot.y;
+                });
+            } else if (animationPhase === 'forming' && elapsedTime >= FORM_DURATION) {
+                animationPhase = 'settled';
+                phaseStartTime = currentTime;
+            }
+            
+            // Update dots based on current phase
+            dots.forEach(dot => {
+                if (animationPhase === 'wandering') {
+                    updateWandering(dot);
+                } else if (animationPhase === 'forming') {
+                    const progress = Math.min(elapsedTime / FORM_DURATION, 1);
+                    updateForming(dot, progress);
+                } else if (animationPhase === 'settled') {
+                    updateSettled(dot, currentTime);
+                }
+                
+                // Update SVG element
+                dot.element.setAttribute('cx', dot.x);
+                dot.element.setAttribute('cy', dot.y);
+            });
+            
+            // Update connector line
+            updateConnector();
+            
+            // Continue animation
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation on page load
+        window.addEventListener('load', () => {
+            initializeDots();
+            animate();
+        });
+    </script>
 
 </body>
 </html>
