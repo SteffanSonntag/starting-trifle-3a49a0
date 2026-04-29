@@ -98,15 +98,22 @@
 
         .contact-image {
             width: 300px;
-            height: auto;
-            border-radius: 10px;
-            overflow: hidden;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .contact-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .spinning-x {
+            width: 200px;
+            height: 200px;
+            animation: spinSlowStop 4s forwards;
+        }
+
+        @keyframes spinSlowStop {
+            0%   { transform: rotate(0deg); animation-timing-function: ease-in; }
+            60%  { transform: rotate(900deg); animation-timing-function: ease-out; }
+            100% { transform: rotate(1080deg); }
         }
 
         /* Fade-in animation */
@@ -134,17 +141,6 @@
         #map {
             opacity: 0;
             animation: fadeIn 0.8s ease 0.4s forwards;
-        }
-
-        .contact-image img {
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .contact-image img:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
         .contact-details {
@@ -229,7 +225,10 @@
         <div class="contact-header">
             <h1 class="contact-title">Contact Us</h1>
             <div class="contact-image">
-                <img src="/Images/Image 3.png" alt="Contact Image">
+                <svg class="spinning-x" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <line x1="15" y1="15" x2="85" y2="85" stroke="#ff3399" stroke-width="12" stroke-linecap="round"/>
+                    <line x1="85" y1="15" x2="15" y2="85" stroke="#ff3399" stroke-width="12" stroke-linecap="round"/>
+                </svg>
             </div>
         </div>
         
