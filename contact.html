@@ -465,7 +465,8 @@
                     <span class="recaptcha-text">I'm not a robot</span>
                 </div>
 
-                <button type="submit" class="submit-btn">Submit Request</button>
+                <button type="submit" class="submit-btn" id="submitBtn">Submit Request</button>
+                <div id="formStatus" style="margin-top:1rem;padding:0.75rem 1rem;border-radius:5px;display:none;font-size:0.95rem;"></div>
             </form>
         </div>
         
@@ -526,14 +527,16 @@
             });
         });
 
-        // Form submission handler (frontend only for now)
-        document.getElementById('infoRequestForm').addEventListener('submit', function(e) {
+        // Form submission handler
+        document.getElementById('infoRequestForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Collect form data
+
+            const submitBtn = document.getElementById('submitBtn');
+            const statusDiv = document.getElementById('formStatus');
+
             const formData = new FormData(this);
             const selectedInterests = Array.from(document.querySelectorAll('input[name="interest"]:checked')).map(cb => cb.value);
-            
+
             const data = {
                 name: formData.get('name'),
                 surname: formData.get('surname'),
@@ -541,17 +544,44 @@
                 phone: formData.get('phone'),
                 position: formData.get('position'),
                 interests: selectedInterests,
-                comment: formData.get('comment'),
-                timestamp: new Date().toISOString()
+                comment: formData.get('comment')
             };
 
-            console.log('Form submission data:', data);
-            
-            // TODO: Send to backend API when ready
-            // Example: fetch('/api/request-info', { method: 'POST', body: JSON.stringify(data) })
-            
-            alert('Thank you for your interest! We will get back to you soon.');
-            this.reset();
+            submitBtn.disabled = true;
+            statusDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/.netlify/functions/send-contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    statusDiv.style.background = '#e6f4ea';
+                    statusDiv.style.color = '#1e7e34';
+                    statusDiv.style.border = '1px solid #b7dfbe';
+                    statusDiv.textContent = 'Thank you! Your message has been sent. We will be in touch soon.';
+                    statusDiv.style.display = 'block';
+                    this.reset();
+                } else {
+                    statusDiv.style.background = '#fde8e8';
+                    statusDiv.style.color = '#c0392b';
+                    statusDiv.style.border = '1px solid #f5c6cb';
+                    statusDiv.textContent = result.error || 'Something went wrong. Please try again.';
+                    statusDiv.style.display = 'block';
+                }
+            } catch (err) {
+                statusDiv.style.background = '#fde8e8';
+                statusDiv.style.color = '#c0392b';
+                statusDiv.style.border = '1px solid #f5c6cb';
+                statusDiv.textContent = 'Network error. Please check your connection and try again.';
+                statusDiv.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+            }
         });
     </script>
 </body>
