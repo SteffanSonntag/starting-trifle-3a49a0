@@ -1,0 +1,11 @@
+{
+  "name": "databloc-website",
+  "version": "1.0.0",
+  "description": "DataBloc static website with Netlify serverless contact form",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.7"
+  }
+}
