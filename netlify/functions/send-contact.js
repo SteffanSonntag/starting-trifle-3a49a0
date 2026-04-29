@@ -18,7 +18,19 @@ function escapeHtml(str) {
 }
 
 function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(email);
+}
+
+let transporter = null;
+
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_PASSWORD },
+    });
+  }
+  return transporter;
 }
 
 exports.handler = async (event) => {
@@ -137,13 +149,10 @@ exports.handler = async (event) => {
 `.trim();
 
   // Send email
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: EMAIL_FROM, pass: EMAIL_PASSWORD },
-  });
+  const transport = getTransporter();
 
   try {
-    await transporter.sendMail({
+    await transport.sendMail({
       from: EMAIL_FROM,
       to: EMAIL_TO,
       replyTo: safeEmail,
@@ -152,7 +161,7 @@ exports.handler = async (event) => {
       html: htmlBody,
     });
   } catch (err) {
-    console.error("Failed to send contact form email:", err);
+    console.error("Failed to send contact form email:", err.message || err.code || "Unknown error");
     return {
       statusCode: 502,
       headers: CORS_HEADERS,

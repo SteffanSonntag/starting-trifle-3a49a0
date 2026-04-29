@@ -557,7 +557,12 @@
                     body: JSON.stringify(data)
                 });
 
-                const result = await response.json();
+                let result = {};
+                try {
+                    result = await response.json();
+                } catch (_) {
+                    // non-JSON response
+                }
 
                 if (response.ok && result.success) {
                     statusDiv.style.background = '#e6f4ea';
