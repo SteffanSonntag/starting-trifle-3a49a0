@@ -96,18 +96,6 @@
             z-index: 1;
         }
 
-        .about-text {
-            font-size: 2rem;
-            line-height: 1.5;
-            font-weight: 500;
-            color: white;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-            margin-bottom: 4rem;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 2rem;
-            border-radius: 10px;
-        }
-
         .samples-container {
             display: flex;
             flex-direction: column;
@@ -117,10 +105,25 @@
 
         .sample-item {
             display: flex;
+            align-items: stretch;
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sample-number {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2rem;
+            font-size: 6rem;
+            font-weight: 700;
+            color: #ff3399;
+            line-height: 1;
+            background-color: rgba(255, 51, 153, 0.08);
+            min-width: 120px;
         }
 
         .sample-text {
@@ -178,9 +181,16 @@
 
         @media (max-width: 900px) {
             .sample-item {
-                flex-direction: column-reverse;
+                flex-direction: column;
             }
-            
+
+            .sample-number {
+                min-width: 0;
+                width: 100%;
+                padding: 1rem;
+                font-size: 4rem;
+            }
+
             .sample-image {
                 min-height: 200px;
             }
@@ -209,10 +219,6 @@
             .content {
                 padding-top: 170px;
             }
-            
-            .about-text {
-                font-size: 1.5rem;
-            }
         }
     </style>
 </head>
@@ -234,14 +240,11 @@
     <img src="/Images/new-zealand-liadar-contour-map.webp" alt="Background" class="background-image">
 
     <section class="content">
-        <p class="about-text">
-            We combine advanced GIS technology with LiDAR, survey, and GPR data to build geospatially accurate BIM models and interactive site maps. By seamlessly integrating essential resources…
-        </p>
-
         <div class="samples-container">
             <div class="sample-item">
+                <div class="sample-number">1</div>
                 <div class="sample-text">
-                    Combine Lidar data, 3D GPR, LINZ data sets and satellite photography to develop site plans in BIM for concept, planning, bulking and optioneering.
+                    We combine advanced GIS technology with LiDAR, survey, and GPR data to build geospatially accurate BIM models and interactive site maps. By seamlessly integrating essential resources…
                 </div>
                 <div class="sample-image">
                     <img src="/Images/new-zealand-gis-to-bim-model-gpr-underground-utility.webp" alt="Sample 1">
@@ -249,6 +252,7 @@
             </div>
 
             <div class="sample-item">
+                <div class="sample-number">2</div>
                 <div class="sample-text">
                     No more guessing where underground utilities are. We develop spatially correct drawings and flag high risk zones that are persistent and exist long after traditional GPR spray…
                 </div>
@@ -258,8 +262,9 @@
             </div>
 
             <div class="sample-item">
+                <div class="sample-number">3</div>
                 <div class="sample-text">
-                    Test ideas and concepts with accurate topography without needing to pay for a survey.
+                    Test ideas and concepts with accurate topography without the cost of a traditional site survey.
                 </div>
                 <div class="sample-image">
                     <img src="/Images/new-zealand-liadar-contour-map.webp" alt="Sample 3">
@@ -267,8 +272,9 @@
             </div>
 
             <div class="sample-item">
+                <div class="sample-number">4</div>
                 <div class="sample-text">
-                    Share interactive maps with the team to show hidden utilities and their metadata.
+                    Share interactive maps with the team to show hidden utilities, photos, hazard maps, contours and documents with their metadata.
                 </div>
                 <div class="sample-image">
                     <img src="/Images/gis-map-viewer-new-zealand.webp" alt="Sample 4">
@@ -276,6 +282,7 @@
             </div>
 
             <div class="sample-item">
+                <div class="sample-number">5</div>
                 <div class="sample-text">
                     Contact our team to build custom databases and interactive maps for asset management.
                 </div>
